@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+import os
+import re
+import csv
+import io
+
+def search_gitmodules():
+    gitmodules_path = '.gitmodules'
+    urls = []
+
+    if not os.path.exists(gitmodules_path):
+        return urls
+
+    with open(gitmodules_path, 'r') as file:
+        for line in file:
+            if 'url' in line:
+                url = parse_url(line)
+                if url:
+                    urls.append(url)
+    return urls
+
+def parse_url(line):
+    url_pattern = re.compile(r'url\s*=\s*(.*)')
+    match = url_pattern.search(line)
+
+    if match:
+        return match.group(1).strip()
+    return None
+
+def check_directories(directories):
+    current_directories = [d.lower() for d in os.listdir('.') if os.path.isdir(d)]
+    found_directories = []
+    for directory in directories:
+        if directory.lower() in current_directories:
+            found_directories.append(directory)
+    return found_directories
+
+def search_tf_files_for_git_https():
+    tf_urls = []
+    for file in os.listdir('.'):
+        if file.endswith('.tf'):
+            with open(file, 'r') as f:
+                for line in f:
+                    if 'git::https' in line:
+                        extracted_url = extract_tf_git_url(line)
+                        if extracted_url:
+                            tf_urls.append(extracted_url)
+    return tf_urls
+
+def extract_tf_git_url(line):
+    git_https_pattern = re.compile(r'git::(https://[^"]+)')
+    match = git_https_pattern.search(line)
+
+    if match:
+        return match.group(1)
+    return None
+
+def list_workflow_files():
+    workflow_dir = '.github/workflows'
+    workflow_files = []
+
+    if os.path.exists(workflow_dir):
+        for file in os.listdir(workflow_dir):
+            if file.endswith('.yml') or file.endswith('.yaml'):
+                workflow_files.append(file)
+    
+    return workflow_files
+
+if __name__ == "__main__":
+    base_dir_name = os.path.basename(os.getcwd())
+    gitmodule_urls = search_gitmodules()
+    tf_urls = search_tf_files_for_git_https()
+    directories_to_check = ['Pipelines', 'inspec', 'cloudformation', 'ansible', 'terraform']
+    found_directories = check_directories(directories_to_check)
+    workflow_files = list_workflow_files()
+
+    dependencies_count = len(found_directories) if found_directories else 0
+    all_urls = gitmodule_urls + tf_urls
+    urls_str = '|'.join(all_urls) if all_urls else 'No URLs found'
+    directories_str = '|'.join(found_directories) if found_directories else ''
+    workflows_str = '|'.join(workflow_files) if workflow_files else 'No Workflows'
+
+    # Prepare CSV output without header
+    output = io.StringIO()
+    csvwriter = csv.writer(output)
+    csvwriter.writerow([base_dir_name, dependencies_count, urls_str, directories_str, workflows_str])
+
+    # Print CSV formatted line to console
+    print(output.getvalue().strip())
