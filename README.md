@@ -1,6 +1,6 @@
 # Python Script for GitHub CLI Extension Overview 🐍🔧
 
-This script is designed to be used as an extension for the GitHub CLI tool. It performs a variety of repository management and dependency-checking operations within a Git repository.
+This script is designed to be used as an extension for the GitHub command-line tool. It performs a variety of repository management and dependency-checking operations within a Git repository.
 
 ## 1. Searching `.gitmodules` File 🔍
 
@@ -53,4 +53,4 @@ This script is designed to be used as an extension for the GitHub CLI tool. It p
 
 ## Intended Use 🎯
 
-- This script is intended to be used as an extension with the GitHub CLI tool, enhancing its capabilities for repository analysis and management.
+- This script is intended to be used as an extension with the GitHub command-line tool, enhancing its capabilities for repository analysis and management.
